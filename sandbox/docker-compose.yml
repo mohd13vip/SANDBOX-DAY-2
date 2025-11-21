@@ -1,0 +1,33 @@
+services:
+  browser:
+    image: lscr.io/linuxserver/chrome:latest
+    container_name: sandbox-browser
+    networks:
+      - websandbox
+    dns:
+      - 1.1.1.1
+    ports:
+      - "3001:3001"
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Etc/UTC
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /config
+
+  sniffer:
+    image: nicolaka/netshoot
+    container_name: sandbox-sniffer
+    command: ["tcpdump", "-i", "any", "-n", "-w", "/logs/traffic.pcap"]
+    networks:
+      - websandbox
+    read_only: true
+    volumes:
+      - ./logs:/logs
+
+networks:
+  websandbox:
+    driver: bridge
